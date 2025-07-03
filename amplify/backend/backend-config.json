@@ -1,0 +1,44 @@
+{
+  "function": {
+    "awstestsunid03afd6b": {
+      "build": true,
+      "dependsOn": [
+        {
+          "attributes": [
+            "Name",
+            "Arn",
+            "StreamArn"
+          ],
+          "category": "storage",
+          "resourceName": "dynamo3a4ecaa7"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    }
+  },
+  "parameters": {
+    "AMPLIFY_function_awstestsunid03afd6b_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "awstestsunid03afd6b"
+        }
+      ]
+    },
+    "AMPLIFY_function_awstestsunid03afd6b_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "awstestsunid03afd6b"
+        }
+      ]
+    }
+  },
+  "storage": {
+    "dynamo3a4ecaa7": {
+      "providerPlugin": "awscloudformation",
+      "service": "DynamoDB"
+    }
+  }
+}

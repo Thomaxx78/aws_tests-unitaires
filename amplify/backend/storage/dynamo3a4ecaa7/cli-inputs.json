@@ -1,0 +1,12 @@
+{
+  "resourceName": "dynamo3a4ecaa7",
+  "tableName": "dynamo3a4ecaa7",
+  "partitionKey": {
+    "fieldName": "user",
+    "fieldType": "string"
+  },
+  "gsi": [],
+  "triggerFunctions": [
+    "awstestsunid03afd6b"
+  ]
+}
