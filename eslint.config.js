@@ -1,23 +1,52 @@
-import js from '@eslint/js'
+import { defineConfig } from 'eslint/config'
 import globals from 'globals'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
-import tseslint from 'typescript-eslint'
-import { globalIgnores } from 'eslint/config'
+import js from '@eslint/js'
+import pluginVue from 'eslint-plugin-vue'
+import pluginVitest from '@vitest/eslint-plugin'
+import skipFormatting from '@vue/eslint-config-prettier/skip-formatting'
 
-export default tseslint.config([
-  globalIgnores(['dist']),
+export default defineConfig([
   {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      js.configs.recommended,
-      tseslint.configs.recommended,
-      reactHooks.configs['recommended-latest'],
-      reactRefresh.configs.vite,
-    ],
+    name: 'app/files-to-lint',
+    files: ['**/*.{js,mjs,jsx,vue}'],
+  },
+
+  {
+    ignores: [
+      '**/dist/**', 
+      '**/dist-ssr/**', 
+      '**/coverage/**',
+      '**/amplify/**',
+      '**/node_modules/**'
+    ]
+  },
+
+  {
     languageOptions: {
-      ecmaVersion: 2020,
-      globals: globals.browser,
+      globals: {
+        ...globals.browser,
+      },
     },
   },
+
+  js.configs.recommended,
+  ...pluginVue.configs['flat/essential'],
+  
+  {
+    ...pluginVitest.configs.recommended,
+    files: ['src/**/__tests__/*'],
+  },
+
+  {
+    files: ['amplify/backend/function/**/src/**/*.js'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+      ecmaVersion: 2022,
+      sourceType: 'commonjs'
+    },
+  },
+
+  skipFormatting,
 ])
