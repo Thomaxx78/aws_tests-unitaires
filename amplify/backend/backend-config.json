@@ -1,4 +1,20 @@
 {
+  "api": {
+    "apidb90645c": {
+      "dependsOn": [
+        {
+          "attributes": [
+            "Name",
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "awstestsunid03afd6b"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "API Gateway"
+    }
+  },
   "function": {
     "awstestsunid03afd6b": {
       "build": true,

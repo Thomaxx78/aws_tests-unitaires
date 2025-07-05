@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "paths": {
+    "/items": {
+      "name": "/items",
+      "lambdaFunction": "awstestsunid03afd6b",
+      "permissions": {
+        "setting": "open"
+      }
+    }
+  }
+}

@@ -1,0 +1,147 @@
+// amplify/backend/function/userService/src/index.js
+const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
+const { DynamoDBDocumentClient, PutCommand, GetCommand } = require("@aws-sdk/lib-dynamodb");
+
+// Configuration DynamoDB
+const dynamoDBClient = new DynamoDBClient({
+    region: process.env.AWS_REGION || 'us-east-1'
+});
+const docClient = DynamoDBDocumentClient.from(dynamoDBClient);
+
+const TABLE_NAME = process.env.USER_TABLE_NAME || 'User-dev';
+
+/**
+ * Ajouter un utilisateur en base
+ * @param {Object} userData - Données de l'utilisateur
+ * @returns {Object} Résultat de l'opération
+ */
+async function add_user(userData) {
+    try {
+        // Validation des données requises
+        if (!userData.id || !userData.email) {
+            throw new Error('ID et email sont requis');
+        }
+
+        const userItem = {
+            id: userData.id,
+            email: userData.email,
+            name: userData.name || '',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            ...userData
+        };
+
+        const command = new PutCommand({
+            TableName: TABLE_NAME,
+            Item: userItem,
+            // Condition pour éviter d'écraser un utilisateur existant
+            ConditionExpression: 'attribute_not_exists(id)'
+        });
+
+        await docClient.send(command);
+
+        return {
+            success: true,
+            user: userItem,
+            message: 'Utilisateur créé avec succès'
+        };
+    } catch (error) {
+        console.error('Erreur add_user:', error);
+        
+        if (error.name === 'ConditionalCheckFailedException') {
+            return {
+                success: false,
+                error: 'Utilisateur avec cet ID existe déjà',
+                code: 'USER_EXISTS'
+            };
+        }
+
+        return {
+            success: false,
+            error: error.message,
+            code: 'ADD_USER_ERROR'
+        };
+    }
+}
+
+/**
+ * Récupérer un utilisateur par ID
+ * @param {string} userId - ID de l'utilisateur
+ * @returns {Object} Utilisateur trouvé ou erreur
+ */
+async function get_user(userId) {
+    try {
+        if (!userId) {
+            throw new Error('ID utilisateur requis');
+        }
+
+        const command = new GetCommand({
+            TableName: TABLE_NAME,
+            Key: {
+                id: userId
+            }
+        });
+
+        const result = await docClient.send(command);
+
+        if (!result.Item) {
+            return {
+                success: false,
+                error: 'Utilisateur non trouvé',
+                code: 'USER_NOT_FOUND'
+            };
+        }
+
+        return {
+            success: true,
+            user: result.Item
+        };
+    } catch (error) {
+        console.error('Erreur get_user:', error);
+        return {
+            success: false,
+            error: error.message,
+            code: 'GET_USER_ERROR'
+        };
+    }
+}
+
+/**
+ * Handler principal Lambda
+ */
+exports.handler = async (event) => {
+    console.log('Event reçu:', JSON.stringify(event, null, 2));
+
+    try {
+        const { action, data } = event;
+
+        switch (action) {
+            case 'add_user':
+                return await add_user(data);
+            
+            case 'get_user':
+                return await get_user(data.userId);
+            
+            default:
+                return {
+                    success: false,
+                    error: 'Action non supportée',
+                    code: 'UNSUPPORTED_ACTION'
+                };
+        }
+    } catch (error) {
+        console.error('Erreur handler:', error);
+        return {
+            success: false,
+            error: 'Erreur interne du serveur',
+            code: 'INTERNAL_ERROR'
+        };
+    }
+};
+
+// Export des fonctions pour les tests
+module.exports = {
+    handler: exports.handler,
+    add_user,
+    get_user
+};
